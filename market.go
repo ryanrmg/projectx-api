@@ -31,6 +31,27 @@ type Bar struct {
 	Volume    float64 `json:"v"`
 }
 
+type AvailableContractRequest struct {
+	Live bool `json:"live"`
+}
+
+type AvailableContractResponse struct {
+	Contracts    []Contract `json:"contracts"`
+	Success      bool       `json:"success"`
+	ErrorCode    int        `json:"errorCode"`
+	ErrorMessage string     `json:"errorMessage"`
+}
+
+type Contract struct {
+	Id             string  `json:"id"`
+	Name           string  `json:"name"`
+	Description    string  `json:"description"`
+	TickSize       float64 `json:"tickSize"`
+	TickValue      float64 `json:"tickValue"`
+	ActiveContract bool    `json:"activeContract"`
+	SymbolId       string  `json:"symbolId"`
+}
+
 type MarketService struct {
 	client *ProjectXClient
 }
@@ -48,4 +69,19 @@ func (s *MarketService) History(ctx context.Context, req BarHistoryRequest) ([]B
 	}
 
 	return resp.Bars, nil
+}
+
+func (s *MarketService) AvailableContracts(ctx context.Context, req AvailableContractRequest) ([]Contract, error) {
+	var resp AvailableContractResponse
+	err := s.client.Post(
+		ctx,
+		"/Contract/available",
+		req,
+		&resp,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Contracts, nil
 }
