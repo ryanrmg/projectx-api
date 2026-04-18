@@ -38,4 +38,28 @@ func TestIntegration_AccountsSearch(t *testing.T) {
 	}
 
 	t.Logf("Found %d accounts", len(accounts))
+
+	bars, err := client.Markets.History(
+		ctx,
+		BarHistoryRequest{
+			ContractId:        "CON.F.US.MNQ.M26",
+			Live:              false,
+			EndTime:           time.Now().UTC().Format(time.RFC3339),
+			StartTime:         time.Now().UTC().Add(-time.Duration(24*5) * time.Hour).Format(time.RFC3339),
+			Unit:              2,
+			UnitNumber:        5,
+			Limit:             100,
+			IncludePartialBar: false,
+		},
+	)
+
+	if err != nil {
+		t.Fatalf("real API call failed: %v", err)
+	}
+
+	if len(bars) == 0 {
+		t.Fatalf("expected at least one bar")
+	}
+
+	t.Logf("Got history for %d bars", len(bars))
 }

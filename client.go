@@ -17,7 +17,7 @@ type ProjectXClient struct {
 	expiresAt time.Time
 
 	Accounts *AccountService
-	// Markets  *MarketService
+	Markets  *MarketService
 }
 
 func NewProjectXClient(baseUrl, username, apiKey string) *ProjectXClient {
@@ -30,6 +30,6 @@ func NewProjectXClient(baseUrl, username, apiKey string) *ProjectXClient {
 		},
 	}
 	c.Accounts = &AccountService{client: c}
-	// c.Markets = &MarketService{client: c}
+	c.Markets = &MarketService{client: c}
 	return c
 }
