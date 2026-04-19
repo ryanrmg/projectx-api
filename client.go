@@ -18,6 +18,7 @@ type ProjectXClient struct {
 
 	Accounts *AccountService
 	Markets  *MarketService
+	Orders   *OrderService
 }
 
 func NewProjectXClient(baseUrl, username, apiKey string) *ProjectXClient {
@@ -31,5 +32,6 @@ func NewProjectXClient(baseUrl, username, apiKey string) *ProjectXClient {
 	}
 	c.Accounts = &AccountService{client: c}
 	c.Markets = &MarketService{client: c}
+	c.Orders = &OrderService{client: c}
 	return c
 }
