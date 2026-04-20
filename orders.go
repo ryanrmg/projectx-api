@@ -66,6 +66,32 @@ type OpenOrder struct {
 	FilledPrice *float64 `json:"filledPrice"`
 }
 
+type PlaceOrderResponse struct {
+	OrderId      int    `json:"orderId"`
+	Success      bool   `json:"success"`
+	ErrorCode    int    `json:"errorCode"`
+	ErrorMessage string `json:"errorMessage"`
+}
+
+type PlaceOrderRequest struct {
+	AccountId         int     `json:"accountId"`
+	ContractId        string  `json:"contractId"`
+	Type              int     `json:"type"`
+	Side              int     `json:"side"`
+	Size              int     `json:"size"`
+	LimitPrice        float64 `json:"limitPrice"`
+	StopPrice         float64 `json:"stopPrice"`
+	TrailPrice        float64 `json:"trailPrice"`
+	CustomTag         string  `json:"customTag"`
+	StopLossBracket   Bracket `json:"stopLossBracket"`
+	TakeProfitBracket Bracket `json:"takeProfitBracket"`
+}
+
+type Bracket struct {
+	Ticks int `json:"ticks"`
+	Type  int `json:"type"`
+}
+
 type OrderService struct {
 	client *ProjectXClient
 }
@@ -98,4 +124,19 @@ func (s *OrderService) OpenOrderSearch(ctx context.Context, req OpenOrderSearchR
 	}
 
 	return resp.Orders, nil
+}
+
+func (s *OrderService) PlaceOrder(ctx context.Context, req PlaceOrderRequest) (int, error) {
+	var resp PlaceOrderResponse
+	err := s.client.Post(
+		ctx,
+		"/Order/place",
+		req,
+		&resp,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.OrderId
 }
