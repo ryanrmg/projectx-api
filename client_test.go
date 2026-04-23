@@ -9,7 +9,7 @@ import (
 func newTestClient(handler http.HandlerFunc) (*ProjectXClient, func()) {
 	server := httptest.NewServer(handler)
 
-	client := NewProjectXClient(server.URL, "username", "test-key")
+	client := NewProjectXClient(server.URL, "https://rtc.topstepx.com/hubs/", "username", "test-key")
 	client.httpClient = &http.Client{Timeout: 5 * time.Second}
 
 	return client, server.Close

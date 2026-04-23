@@ -2,6 +2,8 @@ package projectx
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -18,6 +20,7 @@ func TestIntegration_Orders(t *testing.T) {
 
 	client := NewProjectXClient(
 		"https://api.topstepx.com/api",
+		"https://rtc.topstepx.com/hubs/",
 		username,
 		apiKey,
 	)
@@ -63,6 +66,7 @@ func TestIntegration_Market(t *testing.T) {
 
 	client := NewProjectXClient(
 		"https://api.topstepx.com/api",
+		"https://rtc.topstepx.com/hubs/",
 		username,
 		apiKey,
 	)
@@ -106,6 +110,7 @@ func TestIntegration_AccountsSearch(t *testing.T) {
 
 	client := NewProjectXClient(
 		"https://api.topstepx.com/api",
+		"https://rtc.topstepx.com/hubs/",
 		username,
 		apiKey,
 	)
@@ -126,4 +131,64 @@ func TestIntegration_AccountsSearch(t *testing.T) {
 	}
 
 	t.Logf("Found %d accounts", len(accounts))
+}
+
+func TestRealtime_LiveIntegration(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	client := NewProjectXClient(
+		"https://api.topstepx.com/api",
+		"rtc.topstepx.com/hubs",
+		os.Getenv("PROJECTX_USERNAME"),
+		os.Getenv("PROJECTX_API_KEY"),
+	)
+
+	// connect
+	if err := client.Realtime.Connect(ctx); err != nil {
+		t.Fatalf("connect error: %v", err)
+	}
+
+	// subscribe
+	contract := "CON.F.US.MNQ.M26"
+	if err := client.Realtime.SubscribeContractTrades(contract); err != nil {
+		t.Fatalf("subscribe error: %v", err)
+	}
+
+	t.Log("subscribed — waiting for trade message...")
+
+	trades := client.Realtime.TradesStream()
+
+	timeout := time.After(10 * time.Second)
+	received := false
+
+	for !received {
+		select {
+
+		case msg := <-trades:
+			fmt.Println("TRADE RAW:", string(msg))
+
+			// Optional: validate structure
+			var envelope struct {
+				Type      int             `json:"type"`
+				Target    string          `json:"target"`
+				Arguments json.RawMessage `json:"arguments"`
+			}
+
+			if err := json.Unmarshal(msg, &envelope); err != nil {
+				t.Fatalf("received invalid JSON: %v", err)
+			}
+
+			if envelope.Target != "GatewayTrade" {
+				t.Fatalf("unexpected target: %s", envelope.Target)
+			}
+
+			t.Log("SUCCESS — received realtime trade!")
+			received = true
+
+		// TIMEOUT
+		case <-timeout:
+			t.Fatal("timeout waiting for realtime trade message")
+		}
+	}
 }

@@ -135,8 +135,8 @@ func (s *OrderService) PlaceOrder(ctx context.Context, req PlaceOrderRequest) (i
 		&resp,
 	)
 	if err != nil {
-		return nil, err
+		return -1, err
 	}
 
-	return resp.OrderId
+	return resp.OrderId, nil
 }

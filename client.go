@@ -7,10 +7,12 @@ import (
 )
 
 type ProjectXClient struct {
-	httpClient *http.Client
-	baseUrl    string
-	username   string
-	apiKey     string
+	httpClient  *http.Client
+	baseUrl     string
+	marketWsUrl string
+	userWsUrl   string
+	username    string
+	apiKey      string
 
 	mu        sync.RWMutex
 	token     string
@@ -20,13 +22,17 @@ type ProjectXClient struct {
 	Markets  *MarketService
 	Orders   *OrderService
 	Trades   *TradeService
+
+	Realtime *RealtimeService
 }
 
-func NewProjectXClient(baseUrl, username, apiKey string) *ProjectXClient {
+func NewProjectXClient(baseUrl, wsUrl, username, apiKey string) *ProjectXClient {
 	c := &ProjectXClient{
-		baseUrl:  baseUrl,
-		username: username,
-		apiKey:   apiKey,
+		baseUrl:     baseUrl,
+		marketWsUrl: wsUrl + "/market",
+		userWsUrl:   wsUrl + "/user",
+		username:    username,
+		apiKey:      apiKey,
 		httpClient: &http.Client{
 			Timeout: 15 * time.Second,
 		},
@@ -35,5 +41,6 @@ func NewProjectXClient(baseUrl, username, apiKey string) *ProjectXClient {
 	c.Markets = &MarketService{client: c}
 	c.Orders = &OrderService{client: c}
 	c.Trades = &TradeService{client: c}
+	c.Realtime = NewRealtimeService(c)
 	return c
 }
