@@ -75,7 +75,7 @@ func (r *RealtimeService) Connect(ctx context.Context) error {
 
 	// start background readers
 	go r.readMarketLoop()
-	// go r.readUserLoop()
+	go r.readUserLoop()
 
 	return nil
 }
@@ -96,7 +96,121 @@ func (r *RealtimeService) SubscribeContractTrades(contractId string) error {
 		b = append(b, RecordSep)
 		WriteTextFrame(r.marketConn, b)
 	}
-	return nil
+	return errors.New("contract id is nil")
+}
+
+func (r *RealtimeService) SubscribeContractQuotes(contractId) error {
+	if contractId != "" {
+		log.Println("Subscribing to ContractTrades")
+		msg := SubscribeMsg{
+			Type:      1,
+			Target:    "SubscribeContractQuotes",
+			Arguments: []string{contractId},
+		}
+		b, err := json.Marshal(msg)
+		if err != nil {
+			log.Println("failed to subscribe to ContractQuotes")
+			return err
+		}
+		b = append(b, RecordSep)
+		WriteTextFrame(r.marketConn, b)
+	}
+	return errors.New("contract id is nil")
+}
+
+func (r *RealtimeService) SubscribeContractMarketDepth(contractId) error {
+	if contractId != "" {
+		log.Println("Subscribing to ContractTrades")
+		msg := SubscribeMsg{
+			Type:      1,
+			Target:    "SubscribeContractMarketDepth",
+			Arguments: []string{contractId},
+		}
+		b, err := json.Marshal(msg)
+		if err != nil {
+			log.Println("failed to subscribe to ContractMarketDepth")
+			return err
+		}
+		b = append(b, RecordSep)
+		WriteTextFrame(r.marketConn, b)
+	}
+	return errors.New("contract id is nil")
+}
+
+func (r *RealtimeService) SubscribeAccounts(contractId) error {
+	if contractId != "" {
+		log.Println("Subscribing to ContractTrades")
+		msg := SubscribeMsg{
+			Type:      1,
+			Target:    "SubscribeAccounts",
+			Arguments: []string{contractId},
+		}
+		b, err := json.Marshal(msg)
+		if err != nil {
+			log.Println("failed to subscribe to Accounts")
+			return err
+		}
+		b = append(b, RecordSep)
+		WriteTextFrame(r.userConn, b)
+	}
+	return errors.New("contract id is nil")
+}
+
+func (r *RealtimeService) SubscribeOrders(contractId) error {
+	if contractId != "" {
+		log.Println("Subscribing to ContractTrades")
+		msg := SubscribeMsg{
+			Type:      1,
+			Target:    "SubscribeOrders",
+			Arguments: []string{contractId},
+		}
+		b, err := json.Marshal(msg)
+		if err != nil {
+			log.Println("failed to subscribe to Orders")
+			return err
+		}
+		b = append(b, RecordSep)
+		WriteTextFrame(r.userConn, b)
+	}
+	return errors.New("contract id is nil")
+}
+
+func (r *RealtimeService) SubscribePositions(contractId) error {
+	if contractId != "" {
+		log.Println("Subscribing to ContractTrades")
+		msg := SubscribeMsg{
+			Type:      1,
+			Target:    "SubscribePositions",
+			Arguments: []string{contractId},
+		}
+		b, err := json.Marshal(msg)
+		if err != nil {
+			log.Println("failed to subscribe to Positions")
+			return err
+		}
+		b = append(b, RecordSep)
+		WriteTextFrame(r.userConn, b)
+	}
+	return errors.New("contract id is nil")
+}
+
+func (r *RealtimeService) SubscribeTrades(contractId) error {
+	if contractId != "" {
+		log.Println("Subscribing to ContractTrades")
+		msg := SubscribeMsg{
+			Type:      1,
+			Target:    "SubscribeTrades",
+			Arguments: []string{contractId},
+		}
+		b, err := json.Marshal(msg)
+		if err != nil {
+			log.Println("failed to subscribe to Trades")
+			return err
+		}
+		b = append(b, RecordSep)
+		WriteTextFrame(r.userConn, b)
+	}
+	return errors.New("contract id is nil")
 }
 
 func (r *RealtimeService) readMarketLoop() {
@@ -141,7 +255,7 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 	messages := splitSignalRMessages(frame)
 	// log.Println(string(messages))
 	for _, msg := range messages {
-		// log.Println(string(msg))
+		log.Println(string(envelope.Target))
 
 		var envelope struct {
 			Type   int             `json:"type"`
