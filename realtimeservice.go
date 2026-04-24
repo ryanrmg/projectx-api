@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"log"
 	"net"
 )
@@ -105,11 +106,12 @@ func (r *RealtimeService) SubscribeContractTrades(contractId string) error {
 		}
 		b = append(b, RecordSep)
 		WriteTextFrame(r.marketConn, b)
+		return nil
 	}
 	return errors.New("contract id is nil")
 }
 
-func (r *RealtimeService) SubscribeContractQuotes(contractId) error {
+func (r *RealtimeService) SubscribeContractQuotes(contractId string) error {
 	if contractId != "" {
 		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
@@ -124,11 +126,12 @@ func (r *RealtimeService) SubscribeContractQuotes(contractId) error {
 		}
 		b = append(b, RecordSep)
 		WriteTextFrame(r.marketConn, b)
+		return nil
 	}
 	return errors.New("contract id is nil")
 }
 
-func (r *RealtimeService) SubscribeContractMarketDepth(contractId) error {
+func (r *RealtimeService) SubscribeContractMarketDepth(contractId string) error {
 	if contractId != "" {
 		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
@@ -143,11 +146,12 @@ func (r *RealtimeService) SubscribeContractMarketDepth(contractId) error {
 		}
 		b = append(b, RecordSep)
 		WriteTextFrame(r.marketConn, b)
+		return nil
 	}
 	return errors.New("contract id is nil")
 }
 
-func (r *RealtimeService) SubscribeAccounts(contractId) error {
+func (r *RealtimeService) SubscribeAccounts(contractId string) error {
 	if contractId != "" {
 		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
@@ -162,11 +166,12 @@ func (r *RealtimeService) SubscribeAccounts(contractId) error {
 		}
 		b = append(b, RecordSep)
 		WriteTextFrame(r.userConn, b)
+		return nil
 	}
 	return errors.New("contract id is nil")
 }
 
-func (r *RealtimeService) SubscribeOrders(contractId) error {
+func (r *RealtimeService) SubscribeOrders(contractId string) error {
 	if contractId != "" {
 		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
@@ -181,11 +186,12 @@ func (r *RealtimeService) SubscribeOrders(contractId) error {
 		}
 		b = append(b, RecordSep)
 		WriteTextFrame(r.userConn, b)
+		return nil
 	}
 	return errors.New("contract id is nil")
 }
 
-func (r *RealtimeService) SubscribePositions(contractId) error {
+func (r *RealtimeService) SubscribePositions(contractId string) error {
 	if contractId != "" {
 		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
@@ -200,11 +206,12 @@ func (r *RealtimeService) SubscribePositions(contractId) error {
 		}
 		b = append(b, RecordSep)
 		WriteTextFrame(r.userConn, b)
+		return nil
 	}
 	return errors.New("contract id is nil")
 }
 
-func (r *RealtimeService) SubscribeTrades(contractId) error {
+func (r *RealtimeService) SubscribeTrades(contractId string) error {
 	if contractId != "" {
 		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
@@ -219,6 +226,7 @@ func (r *RealtimeService) SubscribeTrades(contractId) error {
 		}
 		b = append(b, RecordSep)
 		WriteTextFrame(r.userConn, b)
+		return nil
 	}
 	return errors.New("contract id is nil")
 }
@@ -263,9 +271,7 @@ func splitSignalRMessages(frame []byte) [][]byte {
 
 func (r *RealtimeService) handleFrame(frame []byte) {
 	messages := splitSignalRMessages(frame)
-	// log.Println(string(messages))
 	for _, msg := range messages {
-		log.Println(string(envelope.Target))
 
 		var envelope struct {
 			Type   int             `json:"type"`
@@ -344,18 +350,18 @@ func (r *RealtimeService) DepthStream() <-chan json.RawMessage {
 	return r.Depth
 }
 
-func (r *RealtimeService) TradesStream() <-chan json.RawMessage {
+func (r *RealtimeService) UserAccountStream() <-chan json.RawMessage {
 	return r.UserAccount
 }
 
-func (r *RealtimeService) QuotesStream() <-chan json.RawMessage {
+func (r *RealtimeService) UserPositionStream() <-chan json.RawMessage {
 	return r.UserPosition
 }
 
-func (r *RealtimeService) OrdersStream() <-chan json.RawMessage {
+func (r *RealtimeService) UserOrdersStream() <-chan json.RawMessage {
 	return r.UserOrder
 }
 
-func (r *RealtimeService) OrdersStream() <-chan json.RawMessage {
+func (r *RealtimeService) UserTradeStream() <-chan json.RawMessage {
 	return r.UserTrade
 }
