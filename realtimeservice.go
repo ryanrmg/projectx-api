@@ -22,7 +22,12 @@ type RealtimeService struct {
 
 	Trades chan json.RawMessage
 	Quotes chan json.RawMessage
-	Orders chan json.RawMessage
+	Depth  chan json.RawMessage
+
+	UserTrade    chan json.RawMessage
+	UserOrder    chan json.RawMessage
+	UserPosition chan json.RawMessage
+	UserAccount  chan json.RawMessage
 }
 
 func NewRealtimeService(c *ProjectXClient) *RealtimeService {
@@ -30,7 +35,12 @@ func NewRealtimeService(c *ProjectXClient) *RealtimeService {
 		client: c,
 		Trades: make(chan json.RawMessage, 100),
 		Quotes: make(chan json.RawMessage, 100),
-		Orders: make(chan json.RawMessage, 100),
+		Depth:  make(chan json.RawMessage, 100),
+
+		UserTrade:    make(chan json.RawMessage, 100),
+		UserOrder:    make(chan json.RawMessage, 100),
+		UserPosition: make(chan json.RawMessage, 100),
+		UserAccount:  make(chan json.RawMessage, 100),
 	}
 }
 
@@ -289,9 +299,33 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			default:
 			}
 
-		case "ReceiveUserOrders":
+		case "GatewayDepth":
 			select {
-			case r.Orders <- msg:
+			case r.Depth <- msg:
+			default:
+			}
+
+		case "GatewayUserAccount":
+			select {
+			case r.UserAccount <- msg:
+			default:
+			}
+
+		case "GatewayUserPosition":
+			select {
+			case r.UserPosition <- msg:
+			default:
+			}
+
+		case "GatewayUserOrder":
+			select {
+			case r.UserOrder <- msg:
+			default:
+			}
+
+		case "GatewayUserTrade":
+			select {
+			case r.UserTrade <- msg:
 			default:
 			}
 		}
@@ -306,6 +340,22 @@ func (r *RealtimeService) QuotesStream() <-chan json.RawMessage {
 	return r.Quotes
 }
 
+func (r *RealtimeService) DepthStream() <-chan json.RawMessage {
+	return r.Depth
+}
+
+func (r *RealtimeService) TradesStream() <-chan json.RawMessage {
+	return r.UserAccount
+}
+
+func (r *RealtimeService) QuotesStream() <-chan json.RawMessage {
+	return r.UserPosition
+}
+
 func (r *RealtimeService) OrdersStream() <-chan json.RawMessage {
-	return r.Orders
+	return r.UserOrder
+}
+
+func (r *RealtimeService) OrdersStream() <-chan json.RawMessage {
+	return r.UserTrade
 }
