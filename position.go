@@ -31,14 +31,14 @@ type SearchOpenContractRequest struct {
 
 func (p *PositionService) CloseContract(ctx context.Context, req CloseContractRequest) (bool, error) {
 	var resp BasicPositionResponse
-	err := s.client.Post(
+	err := p.client.Post(
 		ctx,
 		"/Position/closeContract",
 		req,
 		&resp,
 	)
 	if err != nil {
-		return -1, err
+		return false, err
 	}
 
 	return resp.Success, nil
@@ -46,14 +46,14 @@ func (p *PositionService) CloseContract(ctx context.Context, req CloseContractRe
 
 func (p *PositionService) PartialCloseContract(ctx context.Context, req PartialCloseContractRequest) (bool, error) {
 	var resp BasicPositionResponse
-	err := s.client.Post(
+	err := p.client.Post(
 		ctx,
 		"/Position/partialCloseContract",
 		req,
 		&resp,
 	)
 	if err != nil {
-		return -1, err
+		return false, err
 	}
 
 	return resp.Success, nil
@@ -61,14 +61,14 @@ func (p *PositionService) PartialCloseContract(ctx context.Context, req PartialC
 
 func (p *PositionService) SearchOpenContract(ctx context.Context, req SearchOpenContractRequest) (bool, error) {
 	var resp BasicPositionResponse
-	err := s.client.Post(
+	err := p.client.Post(
 		ctx,
 		"/Position/searchOpen",
 		req,
 		&resp,
 	)
 	if err != nil {
-		return -1, err
+		return false, err
 	}
 
 	return resp.Success, nil

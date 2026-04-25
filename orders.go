@@ -170,7 +170,7 @@ func (s *OrderService) CancelOrder(ctx context.Context, req CancelOrderRequest) 
 		&resp,
 	)
 	if err != nil {
-		return -1, err
+		return false, err
 	}
 
 	return resp.Success, nil
@@ -185,7 +185,7 @@ func (s *OrderService) ModifyOrder(ctx context.Context, req ModifyOrderRequest) 
 		&resp,
 	)
 	if err != nil {
-		return -1, err
+		return false, err
 	}
 
 	return resp.Success, nil
