@@ -35,6 +35,15 @@ type AvailableContractRequest struct {
 	Live bool `json:"live"`
 }
 
+type SearchContractRequest struct {
+	SearchText string `json:"searchText"`
+	Live       bool   `json:"live"`
+}
+
+type SearchContractByIdRequest struct {
+	ContractId string `json:"contractId"`
+}
+
 type AvailableContractResponse struct {
 	Contracts    []Contract `json:"contracts"`
 	Success      bool       `json:"success"`
@@ -83,5 +92,33 @@ func (s *MarketService) AvailableContracts(ctx context.Context, req AvailableCon
 		return nil, err
 	}
 
+	return resp.Contracts, nil
+}
+
+func (s *MarketService) SearchContracts(ctx context.Context, req SearchContractRequest) ([]Contract, error) {
+	var resp AvailableContractResponse
+	err := s.client.Post(
+		ctx,
+		"/Contract/search",
+		req,
+		&resp,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Contracts, nil
+}
+
+func (s *MarketService) SearchContractById(ctx context.Context, req SearchContractByIdRequest) ([]Contract, error) {
+	var resp AvailableContractResponse
+	err := s.client.Post(
+		ctx,
+		"/Contract/searchById",
+		req,
+		&resp,
+	)
+	if err != nil {
+		return nil, err
+	}
 	return resp.Contracts, nil
 }

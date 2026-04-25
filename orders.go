@@ -15,6 +15,26 @@ type OpenOrderSearchRequest struct {
 	AccountId int `json:"accountId"`
 }
 
+type CancelOrderRequest struct {
+	AccountId int `json:"accountId"`
+	OrderId   int `json:"orderId"`
+}
+
+type BasicOrderResponse struct {
+	Success      bool   `json:"success"`
+	ErrorCode    int    `json:"errorCode"`
+	ErrorMessage string `json:"errorMessage"`
+}
+
+type ModifyOrderRequest struct {
+	AccountId  int     `json:"accountId"`
+	OrderId    int     `json:"orderId"`
+	Size       int     `json:"size"`
+	LimitPrice float64 `json:"limitPrice"`
+	StopPrice  float64 `json:"stopPrice"`
+	TrailPrice float64 `json:"trailPrice"`
+}
+
 type OrderSearchResponse struct {
 	Orders       []Order `json:"orders"`
 	Success      bool    `json:"success"`
@@ -139,4 +159,34 @@ func (s *OrderService) PlaceOrder(ctx context.Context, req PlaceOrderRequest) (i
 	}
 
 	return resp.OrderId, nil
+}
+
+func (s *OrderService) CancelOrder(ctx context.Context, req CancelOrderRequest) (bool, error) {
+	var resp BasicOrderResponse
+	err := s.client.Post(
+		ctx,
+		"/Order/cancel",
+		req,
+		&resp,
+	)
+	if err != nil {
+		return -1, err
+	}
+
+	return resp.Success, nil
+}
+
+func (s *OrderService) ModifyOrder(ctx context.Context, req ModifyOrderRequest) (bool, error) {
+	var resp BasicOrderResponse
+	err := s.client.Post(
+		ctx,
+		"/Order/modify",
+		req,
+		&resp,
+	)
+	if err != nil {
+		return -1, err
+	}
+
+	return resp.Success, nil
 }
