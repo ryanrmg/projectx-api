@@ -9,7 +9,12 @@ go get github.com/ryangess/projectx-api
 ## Example
 
 ```go
-client := projectx.NewProjectXClient("https://gateway-api-demo.s2f.projectx.com", "username", "api-key")
+client := NewProjectXClient(
+	"https://api.topstepx.com/api",
+	"https://rtc.topstepx.com/hubs/",
+	"username",
+	"api-key",
+)
 
 accounts, err := client.Accounts.Search(
 	ctx,

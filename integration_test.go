@@ -8,10 +8,12 @@ import (
 	"testing"
 	"time"
 )
+var (
+	username = os.Getenv("PROJECTX_USERNAME")
+	apiKey = os.Getenv("PROJECTX_API_KEY")
+)
 
 func TestIntegration_Orders(t *testing.T) {
-	username := os.Getenv("PROJECTX_USERNAME")
-	apiKey := os.Getenv("PROJECTX_API_KEY")
 
 	// Skip if creds not provided
 	if username == "" || apiKey == "" {
@@ -56,8 +58,8 @@ func TestIntegration_Orders(t *testing.T) {
 }
 
 func TestIntegration_Market(t *testing.T) {
-	username := os.Getenv("PROJECTX_USERNAME")
-	apiKey := os.Getenv("PROJECTX_API_KEY")
+	// username := os.Getenv("PROJECTX_USERNAME")
+	// apiKey := os.Getenv("PROJECTX_API_KEY")
 
 	// Skip if creds not provided
 	if username == "" || apiKey == "" {
@@ -100,8 +102,8 @@ func TestIntegration_Market(t *testing.T) {
 }
 
 func TestIntegration_AccountsSearch(t *testing.T) {
-	username := os.Getenv("PROJECTX_USERNAME")
-	apiKey := os.Getenv("PROJECTX_API_KEY")
+	// username := os.Getenv("PROJECTX_USERNAME")
+	// apiKey := os.Getenv("PROJECTX_API_KEY")
 
 	// Skip if creds not provided
 	if username == "" || apiKey == "" {
@@ -140,8 +142,8 @@ func TestRealtime_LiveIntegration(t *testing.T) {
 	client := NewProjectXClient(
 		"https://api.topstepx.com/api",
 		"rtc.topstepx.com/hubs",
-		os.Getenv("PROJECTX_USERNAME"),
-		os.Getenv("PROJECTX_API_KEY"),
+		username,
+		apiKey,
 	)
 
 	// connect
