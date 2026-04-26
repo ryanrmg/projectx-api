@@ -58,8 +58,6 @@ func TestIntegration_Orders(t *testing.T) {
 }
 
 func TestIntegration_Market(t *testing.T) {
-	// username := os.Getenv("PROJECTX_USERNAME")
-	// apiKey := os.Getenv("PROJECTX_API_KEY")
 
 	// Skip if creds not provided
 	if username == "" || apiKey == "" {
@@ -102,8 +100,6 @@ func TestIntegration_Market(t *testing.T) {
 }
 
 func TestIntegration_AccountsSearch(t *testing.T) {
-	// username := os.Getenv("PROJECTX_USERNAME")
-	// apiKey := os.Getenv("PROJECTX_API_KEY")
 
 	// Skip if creds not provided
 	if username == "" || apiKey == "" {
