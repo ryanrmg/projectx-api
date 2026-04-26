@@ -2,7 +2,6 @@ package projectx
 
 import (
 	"context"
-	"time"
 )
 
 type TradeService struct {
@@ -10,23 +9,23 @@ type TradeService struct {
 }
 
 type TradeSearchRequest struct {
-	AccountId      int       `json:"accountId"`
-	StartTimestamp time.Time `json:"startTimestamp"`
-	EndTimestamp   time.Time `json:"endTimestamp"`
+	AccountId      int    `json:"accountId"`
+	StartTimestamp string `json:"startTimestamp"`
+	EndTimestamp   string `json:"endTimestamp"`
 }
 
 type Trade struct {
-	Id                int       `json:"id"`
-	AccountId         int       `json:"accountId"`
-	ContractId        string    `json:"contractId"`
-	CreationTimestamp time.Time `json:"creationTimestamp"`
-	Price             float64   `json:"price"`
-	ProfitAndLoss     float64   `json:"profitAndLoss"`
-	Fees              float64   `json:"fees"`
-	Side              int       `json:"side"`
-	Size              int       `json:"size"`
-	Voided            bool      `json:"voided"`
-	OrderId           int       `json:"orderId"`
+	Id                int     `json:"id"`
+	AccountId         int     `json:"accountId"`
+	ContractId        string  `json:"contractId"`
+	CreationTimestamp string  `json:"creationTimestamp"`
+	Price             float64 `json:"price"`
+	ProfitAndLoss     float64 `json:"profitAndLoss"`
+	Fees              float64 `json:"fees"`
+	Side              int     `json:"side"`
+	Size              int     `json:"size"`
+	Voided            bool    `json:"voided"`
+	OrderId           int     `json:"orderId"`
 }
 
 type TradeSearchResponse struct {
