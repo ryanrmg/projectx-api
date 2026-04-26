@@ -4,7 +4,7 @@ Unofficial Go client for the ProjectX Gateway API.
 
 ## Install
 
-go get github.com/ryangess/projectx-api
+go get github.com/ryanrmg/projectx-api
 
 ## Example
 
