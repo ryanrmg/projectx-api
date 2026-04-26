@@ -254,11 +254,10 @@ func GetWsConn(negotiateUrl, wsUrl, token string) (net.Conn, error) {
 	WriteTextFrame(conn, []byte(hs))
 
 	// read server ack (simple read; assumes first frame fits)
-	msg, err := ReadFullText(conn)
+	_, err = ReadFullText(conn)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	fmt.Printf("projectx server handshake ack: %q\n", msg)
 	return conn, nil
 }

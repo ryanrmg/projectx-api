@@ -93,7 +93,6 @@ func (r *RealtimeService) Connect(ctx context.Context) error {
 
 func (r *RealtimeService) SubscribeContractTrades(contractId string) error {
 	if contractId != "" {
-		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
 			Type:      1,
 			Target:    "SubscribeContractTrades",
@@ -113,7 +112,6 @@ func (r *RealtimeService) SubscribeContractTrades(contractId string) error {
 
 func (r *RealtimeService) SubscribeContractQuotes(contractId string) error {
 	if contractId != "" {
-		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
 			Type:      1,
 			Target:    "SubscribeContractQuotes",
@@ -133,7 +131,6 @@ func (r *RealtimeService) SubscribeContractQuotes(contractId string) error {
 
 func (r *RealtimeService) SubscribeContractMarketDepth(contractId string) error {
 	if contractId != "" {
-		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
 			Type:      1,
 			Target:    "SubscribeContractMarketDepth",
@@ -153,7 +150,6 @@ func (r *RealtimeService) SubscribeContractMarketDepth(contractId string) error 
 
 func (r *RealtimeService) SubscribeAccounts(contractId string) error {
 	if contractId != "" {
-		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
 			Type:      1,
 			Target:    "SubscribeAccounts",
@@ -173,7 +169,6 @@ func (r *RealtimeService) SubscribeAccounts(contractId string) error {
 
 func (r *RealtimeService) SubscribeOrders(contractId string) error {
 	if contractId != "" {
-		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
 			Type:      1,
 			Target:    "SubscribeOrders",
@@ -193,7 +188,6 @@ func (r *RealtimeService) SubscribeOrders(contractId string) error {
 
 func (r *RealtimeService) SubscribePositions(contractId string) error {
 	if contractId != "" {
-		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
 			Type:      1,
 			Target:    "SubscribePositions",
@@ -213,7 +207,6 @@ func (r *RealtimeService) SubscribePositions(contractId string) error {
 
 func (r *RealtimeService) SubscribeTrades(contractId string) error {
 	if contractId != "" {
-		log.Println("Subscribing to ContractTrades")
 		msg := SubscribeMsg{
 			Type:      1,
 			Target:    "SubscribeTrades",
@@ -232,7 +225,6 @@ func (r *RealtimeService) SubscribeTrades(contractId string) error {
 }
 
 func (r *RealtimeService) readMarketLoop() {
-	log.Println("read loop market")
 	for {
 		msg, err := ReadFullText(r.marketConn)
 		if err != nil {
@@ -245,10 +237,8 @@ func (r *RealtimeService) readMarketLoop() {
 }
 
 func (r *RealtimeService) readUserLoop() {
-	log.Println("read loop user")
 	for {
 		msg, err := ReadFullText(r.userConn)
-		log.Println(msg)
 		if err != nil {
 			log.Println("user read error:", err)
 			return
