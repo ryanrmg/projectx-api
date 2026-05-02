@@ -1,5 +1,9 @@
 package projectx
 
+import (
+	"fmt"
+)
+
 type GatewayTrade struct {
 	SymbolId  string  `json:"symbolId"`
 	Price     float64 `json:"price"`

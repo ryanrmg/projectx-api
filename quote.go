@@ -1,5 +1,9 @@
 package projectx
 
+import (
+	"fmt"
+)
+
 type GatewayQuote struct {
 	Symbol        string  `json:"symbol"`
 	SymbolName    string  `json:"symbolName,omitempty"`

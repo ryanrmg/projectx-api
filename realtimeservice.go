@@ -21,27 +21,27 @@ type RealtimeService struct {
 	marketConn net.Conn
 	client     *ProjectXClient
 
-	Trades chan json.RawMessage
-	Quotes chan json.RawMessage
-	Depth  chan json.RawMessage
+	Trade chan GatewayTrade
+	Quote chan GatewayQuote
+	Depth chan GatewayDepth
 
-	UserTrade    chan json.RawMessage
-	UserOrder    chan json.RawMessage
-	UserPosition chan json.RawMessage
-	UserAccount  chan json.RawMessage
+	UserOrder    chan GatewayUserOrder
+	UserTrade    chan GatewayUserTrade
+	UserPosition chan GatewayUserPosition
+	UserAccount  chan GatewayUserAccount
 }
 
 func NewRealtimeService(c *ProjectXClient) *RealtimeService {
 	return &RealtimeService{
 		client: c,
-		Trades: make(chan json.RawMessage, 100),
-		Quotes: make(chan json.RawMessage, 100),
-		Depth:  make(chan json.RawMessage, 100),
+		Trade:  make(chan GatewayTrade, 100),
+		Quote:  make(chan GatewayQuote, 100),
+		Depth:  make(chan GatewayDepth, 100),
 
-		UserTrade:    make(chan json.RawMessage, 100),
-		UserOrder:    make(chan json.RawMessage, 100),
-		UserPosition: make(chan json.RawMessage, 100),
-		UserAccount:  make(chan json.RawMessage, 100),
+		UserOrder:    make(chan GatewayUserOrder, 100),
+		UserTrade:    make(chan GatewayUserTrade, 100),
+		UserPosition: make(chan GatewayUserPosition, 100),
+		UserAccount:  make(chan GatewayUserAccount, 100),
 	}
 }
 
@@ -49,14 +49,6 @@ type SubscribeMsg struct {
 	Type      int      `json:"type"`
 	Target    string   `json:"target"`
 	Arguments []string `json:"arguments"`
-}
-
-type GatewayTrade struct {
-	SymbolId  string  `json:"symbolId"`
-	Price     float64 `json:"price"`
-	Timestamp string  `json:"timestamp"`
-	Type      int     `json:"type"`
-	Volume    int64   `json:"volume"`
 }
 
 func (r *RealtimeService) Connect(ctx context.Context) error {
@@ -279,79 +271,112 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			continue
 		}
 
-		log.Println(envelope.Target)
-
 		switch envelope.Target {
 
 		case "GatewayTrade":
-			select {
-			case r.Trades <- msg:
-			default:
+			var msg []GatewayTrade
+			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
+				for _, v := range msg {
+					select {
+					case r.Trade <- v:
+					default:
+					}
+				}
 			}
 
 		case "GatewayQuote":
-			select {
-			case r.Quotes <- msg:
-			default:
+			var msg []GatewayQuote
+			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
+				for _, v := range msg {
+					select {
+					case r.Quote <- v:
+					default:
+					}
+				}
 			}
 
 		case "GatewayDepth":
-			select {
-			case r.Depth <- msg:
-			default:
+			var msg []GatewayDepth
+			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
+				for _, v := range msg {
+					select {
+					case r.Depth <- v:
+					default:
+					}
+				}
 			}
 
 		case "GatewayUserAccount":
-			select {
-			case r.UserAccount <- msg:
-			default:
+			var msg []GatewayUserAccount
+			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
+				for _, v := range msg {
+					select {
+					case r.UserAccount <- v:
+					default:
+					}
+				}
 			}
 
 		case "GatewayUserPosition":
-			select {
-			case r.UserPosition <- msg:
-			default:
+			var msg []GatewayUserPosition
+			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
+				for _, v := range msg {
+					select {
+					case r.UserPosition <- v:
+					default:
+					}
+				}
 			}
 
 		case "GatewayUserOrder":
-			select {
-			case r.UserOrder <- msg:
-			default:
+			var msg []GatewayUserOrder
+			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
+				for _, v := range msg {
+					select {
+					case r.UserOrder <- v:
+					default:
+					}
+				}
 			}
 
 		case "GatewayUserTrade":
-			select {
-			case r.UserTrade <- msg:
-			default:
+			var msg []GatewayUserTrade
+			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
+				for _, v := range msg {
+					select {
+					case r.UserTrade <- v:
+					default:
+					}
+				}
 			}
 		}
 	}
 }
 
-func (r *RealtimeService) TradesStream() <-chan json.RawMessage {
-	return r.Trades
+func (r *RealtimeService) TradesStream() <-chan GatewayTrade {
+	return r.Trade
 }
 
-func (r *RealtimeService) QuotesStream() <-chan json.RawMessage {
-	return r.Quotes
+func (r *RealtimeService) QuotesStream() <-chan GatewayQuote {
+	return r.Quote
 }
 
-func (r *RealtimeService) DepthStream() <-chan json.RawMessage {
+func (r *RealtimeService) DepthStream() <-chan GatewayDepth {
 	return r.Depth
 }
 
-func (r *RealtimeService) UserAccountStream() <-chan json.RawMessage {
+func (r *RealtimeService) UserAccountStream() <-chan GatewayUserAccount {
 	return r.UserAccount
 }
 
-func (r *RealtimeService) UserPositionStream() <-chan json.RawMessage {
+func (r *RealtimeService) UserPositionStream() <-chan GatewayUserPosition {
 	return r.UserPosition
 }
 
-func (r *RealtimeService) UserOrdersStream() <-chan json.RawMessage {
+func (r *RealtimeService) UserOrdersStream() <-chan GatewayUserOrder {
 	return r.UserOrder
 }
 
-func (r *RealtimeService) UserTradeStream() <-chan json.RawMessage {
+func (r *RealtimeService) UserTradeStream() <-chan GatewayUserTrade {
 	return r.UserTrade
 }

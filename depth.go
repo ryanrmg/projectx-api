@@ -1,5 +1,9 @@
 package projectx
 
+import (
+	"fmt"
+)
+
 type GatewayDepth struct {
 	Timestamp     string  `json:"timestamp"`
 	Type          int     `json:"type"`

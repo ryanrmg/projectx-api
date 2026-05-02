@@ -8,9 +8,10 @@ import (
 	"testing"
 	"time"
 )
+
 var (
 	username = os.Getenv("PROJECTX_USERNAME")
-	apiKey = os.Getenv("PROJECTX_API_KEY")
+	apiKey   = os.Getenv("PROJECTX_API_KEY")
 )
 
 func TestIntegration_Orders(t *testing.T) {
@@ -164,17 +165,13 @@ func TestRealtime_LiveIntegration(t *testing.T) {
 		select {
 
 		case msg := <-trades:
-			fmt.Println("TRADE RAW:", string(msg))
+			fmt.Println("TRADE:", msg.String())
 
 			// Optional: validate structure
 			var envelope struct {
 				Type      int             `json:"type"`
 				Target    string          `json:"target"`
 				Arguments json.RawMessage `json:"arguments"`
-			}
-
-			if err := json.Unmarshal(msg, &envelope); err != nil {
-				t.Fatalf("received invalid JSON: %v", err)
 			}
 
 			if envelope.Target != "GatewayTrade" {
