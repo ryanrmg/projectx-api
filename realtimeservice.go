@@ -7,6 +7,8 @@ import (
 	"errors"
 	"log"
 	"net"
+
+	"sync"
 )
 
 const (
@@ -14,6 +16,8 @@ const (
 	Ask   = 1
 	Https = "https://"
 	Wss   = "wss://"
+
+	CHAN_SIZE = 100
 )
 
 type RealtimeService struct {
@@ -21,27 +25,45 @@ type RealtimeService struct {
 	marketConn net.Conn
 	client     *ProjectXClient
 
-	Trade chan GatewayTrade
-	Quote chan GatewayQuote
-	Depth chan GatewayDepth
+	mu sync.RWMutex
+	// Trade chan GatewayTrade
+	// Quote chan GatewayQuote
+	// Depth chan GatewayDepth
 
-	UserOrder    chan GatewayUserOrder
-	UserTrade    chan GatewayUserTrade
-	UserPosition chan GatewayUserPosition
-	UserAccount  chan GatewayUserAccount
+	tradeSubs map[chan GatewayTrade]struct{}
+	quoteSubs map[chan GatewayQuote]struct{}
+	depthSubs map[chan GatewayDepth]struct{}
+
+	// UserOrder    chan GatewayUserOrder
+	// UserTrade    chan GatewayUserTrade
+	// UserPosition chan GatewayUserPosition
+	// UserAccount  chan GatewayUserAccount
+
+	userOrderSubs    map[chan GatewayUserOrder]struct{}
+	userTradeSubs    map[chan GatewayUserTrade]struct{}
+	userPositionSubs map[chan GatewayUserPosition]struct{}
+	userAccountSubs  map[chan GatewayUserAccount]struct{}
 }
 
 func NewRealtimeService(c *ProjectXClient) *RealtimeService {
 	return &RealtimeService{
-		client: c,
-		Trade:  make(chan GatewayTrade, 100),
-		Quote:  make(chan GatewayQuote, 100),
-		Depth:  make(chan GatewayDepth, 100),
+		client:    c,
+		tradeSubs: make(map[chan GatewayTrade]struct{}),
+		quoteSubs: make(map[chan GatewayQuote]struct{}),
+		depthSubs: make(map[chan GatewayDepth]struct{}),
 
-		UserOrder:    make(chan GatewayUserOrder, 100),
-		UserTrade:    make(chan GatewayUserTrade, 100),
-		UserPosition: make(chan GatewayUserPosition, 100),
-		UserAccount:  make(chan GatewayUserAccount, 100),
+		userOrderSubs:    make(map[chan GatewayUserOrder]struct{}),
+		userTradeSubs:    make(map[chan GatewayUserTrade]struct{}),
+		userPositionSubs: make(map[chan GatewayUserPosition]struct{}),
+		userAccountSubs:  make(map[chan GatewayUserAccount]struct{}),
+		// Trade:  make(chan GatewayTrade, 100),
+		// Quote:  make(chan GatewayQuote, 100),
+		// Depth:  make(chan GatewayDepth, 100),
+
+		// UserOrder:    make(chan GatewayUserOrder, 100),
+		// UserTrade:    make(chan GatewayUserTrade, 100),
+		// UserPosition: make(chan GatewayUserPosition, 100),
+		// UserAccount:  make(chan GatewayUserAccount, 100),
 	}
 }
 
@@ -277,10 +299,7 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			var msg []GatewayTrade
 			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
 				for _, v := range msg {
-					select {
-					case r.Trade <- v:
-					default:
-					}
+					r.broadcastTrade(v)
 				}
 			}
 
@@ -288,10 +307,7 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			var msg []GatewayQuote
 			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
 				for _, v := range msg {
-					select {
-					case r.Quote <- v:
-					default:
-					}
+					r.broadcastQuote(v)
 				}
 			}
 
@@ -299,10 +315,7 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			var msg []GatewayDepth
 			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
 				for _, v := range msg {
-					select {
-					case r.Depth <- v:
-					default:
-					}
+					r.broadcastDepth(v)
 				}
 			}
 
@@ -310,10 +323,7 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			var msg []GatewayUserAccount
 			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
 				for _, v := range msg {
-					select {
-					case r.UserAccount <- v:
-					default:
-					}
+					r.broadcastUserAccount(v)
 				}
 			}
 
@@ -321,10 +331,7 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			var msg []GatewayUserPosition
 			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
 				for _, v := range msg {
-					select {
-					case r.UserPosition <- v:
-					default:
-					}
+					r.broadcastUserPosition(v)
 				}
 			}
 
@@ -332,10 +339,7 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			var msg []GatewayUserOrder
 			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
 				for _, v := range msg {
-					select {
-					case r.UserOrder <- v:
-					default:
-					}
+					r.broadcastUserOrder(v)
 				}
 			}
 
@@ -343,40 +347,163 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 			var msg []GatewayUserTrade
 			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
 				for _, v := range msg {
-					select {
-					case r.UserTrade <- v:
-					default:
-					}
+					r.broadcastUserTrade(v)
 				}
 			}
 		}
 	}
 }
 
+func (r *RealtimeService) broadcastTrade(t GatewayTrade) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for sub := range r.tradeSubs {
+		select {
+		case sub <- t:
+		default:
+		}
+	}
+}
+
+func (r *RealtimeService) broadcastQuote(q GatewayQuote) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for sub := range r.quoteSubs {
+		select {
+		case sub <- q:
+		default:
+		}
+	}
+}
+
+func (r *RealtimeService) broadcastDepth(d GatewayDepth) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for sub := range r.depthSubs {
+		select {
+		case sub <- d:
+		default:
+		}
+	}
+}
+
+func (r *RealtimeService) broadcastUserAccount(q GatewayUserAccount) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for sub := range r.userAccountSubs {
+		select {
+		case sub <- q:
+		default:
+		}
+	}
+}
+
+func (r *RealtimeService) broadcastUserPosition(d GatewayUserPosition) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for sub := range r.userPositionSubs {
+		select {
+		case sub <- d:
+		default:
+		}
+	}
+}
+
+func (r *RealtimeService) broadcastUserOrder(q GatewayUserOrder) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for sub := range r.userOrderSubs {
+		select {
+		case sub <- q:
+		default:
+		}
+	}
+}
+
+func (r *RealtimeService) broadcastUserTrade(d GatewayUserTrade) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for sub := range r.userTradeSubs {
+		select {
+		case sub <- d:
+		default:
+		}
+	}
+}
+
 func (r *RealtimeService) TradesStream() <-chan GatewayTrade {
-	return r.Trade
+	ch := make(chan GatewayTrade, CHAN_SIZE)
+
+	r.mu.Lock()
+	r.tradeSubs[ch] = struct{}{}
+	r.mu.Unlock()
+
+	return ch
 }
 
 func (r *RealtimeService) QuotesStream() <-chan GatewayQuote {
-	return r.Quote
+	ch := make(chan GatewayQuote, CHAN_SIZE)
+
+	r.mu.Lock()
+	r.quoteSubs[ch] = struct{}{}
+	r.mu.Unlock()
+
+	return ch
 }
 
 func (r *RealtimeService) DepthStream() <-chan GatewayDepth {
-	return r.Depth
+	ch := make(chan GatewayDepth, CHAN_SIZE)
+
+	r.mu.Lock()
+	r.depthSubs[ch] = struct{}{}
+	r.mu.Unlock()
+
+	return ch
 }
 
 func (r *RealtimeService) UserAccountStream() <-chan GatewayUserAccount {
-	return r.UserAccount
+	ch := make(chan GatewayUserAccount, CHAN_SIZE)
+
+	r.mu.Lock()
+	r.userAccountSubs[ch] = struct{}{}
+	r.mu.Unlock()
+
+	return ch
 }
 
 func (r *RealtimeService) UserPositionStream() <-chan GatewayUserPosition {
-	return r.UserPosition
+	ch := make(chan GatewayUserPosition, CHAN_SIZE)
+
+	r.mu.Lock()
+	r.userPositionSubs[ch] = struct{}{}
+	r.mu.Unlock()
+
+	return ch
 }
 
 func (r *RealtimeService) UserOrdersStream() <-chan GatewayUserOrder {
-	return r.UserOrder
+	ch := make(chan GatewayUserOrder, CHAN_SIZE)
+
+	r.mu.Lock()
+	r.userOrderSubs[ch] = struct{}{}
+	r.mu.Unlock()
+
+	return ch
 }
 
 func (r *RealtimeService) UserTradeStream() <-chan GatewayUserTrade {
-	return r.UserTrade
+	ch := make(chan GatewayUserTrade, CHAN_SIZE)
+
+	r.mu.Lock()
+	r.userTradeSubs[ch] = struct{}{}
+	r.mu.Unlock()
+
+	return ch
 }

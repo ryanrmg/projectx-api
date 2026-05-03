@@ -8,6 +8,7 @@ go get github.com/ryanrmg/projectx-api
 
 ## Example
 
+## Basic 
 ```go
 client := NewProjectXClient(
 	"https://api.topstepx.com/api",
@@ -39,5 +40,33 @@ contracts, err := client.Markets.AvailableContracts(
 	ctx,
 	AvailableContractRequest{Live: true},
 )
+
+```
+
+## Real Time
+
+```go
+	// connect
+	if err := client.Realtime.Connect(ctx); err != nil {
+		t.Fatalf("connect error: %v", err)
+	}
+
+	// subscribe
+	contract := "CON.F.US.MNQ.M26"
+	if err := client.Realtime.SubscribeContractTrades(contract); err != nil {
+		t.Fatalf("subscribe error: %v", err)
+	}
+
+	t.Log("subscribed — waiting for trade message...")
+
+	trades := client.Realtime.TradesStream()
+
+	for {
+		select {
+
+		case msg := <-trades:
+			// do something with your message
+
+	}
 
 ```
