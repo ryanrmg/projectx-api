@@ -26,18 +26,10 @@ type RealtimeService struct {
 	client     *ProjectXClient
 
 	mu sync.RWMutex
-	// Trade chan GatewayTrade
-	// Quote chan GatewayQuote
-	// Depth chan GatewayDepth
 
 	tradeSubs map[chan GatewayTrade]struct{}
 	quoteSubs map[chan GatewayQuote]struct{}
 	depthSubs map[chan GatewayDepth]struct{}
-
-	// UserOrder    chan GatewayUserOrder
-	// UserTrade    chan GatewayUserTrade
-	// UserPosition chan GatewayUserPosition
-	// UserAccount  chan GatewayUserAccount
 
 	userOrderSubs    map[chan GatewayUserOrder]struct{}
 	userTradeSubs    map[chan GatewayUserTrade]struct{}
@@ -56,14 +48,6 @@ func NewRealtimeService(c *ProjectXClient) *RealtimeService {
 		userTradeSubs:    make(map[chan GatewayUserTrade]struct{}),
 		userPositionSubs: make(map[chan GatewayUserPosition]struct{}),
 		userAccountSubs:  make(map[chan GatewayUserAccount]struct{}),
-		// Trade:  make(chan GatewayTrade, 100),
-		// Quote:  make(chan GatewayQuote, 100),
-		// Depth:  make(chan GatewayDepth, 100),
-
-		// UserOrder:    make(chan GatewayUserOrder, 100),
-		// UserTrade:    make(chan GatewayUserTrade, 100),
-		// UserPosition: make(chan GatewayUserPosition, 100),
-		// UserAccount:  make(chan GatewayUserAccount, 100),
 	}
 }
 
