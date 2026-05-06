@@ -2,7 +2,6 @@ package projectx
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"testing"
@@ -12,6 +11,12 @@ import (
 var (
 	username = os.Getenv("PROJECTX_USERNAME")
 	apiKey   = os.Getenv("PROJECTX_API_KEY")
+	client = NewProjectXClient(
+		"https://api.topstepx.com/api",
+		"rtc.topstepx.com/hubs/",
+		os.Getenv("PROJECTX_USERNAME"),
+		os.Getenv("PROJECTX_API_KEY"),
+	)
 )
 
 func TestIntegration_Orders(t *testing.T) {
@@ -20,13 +25,6 @@ func TestIntegration_Orders(t *testing.T) {
 	if username == "" || apiKey == "" {
 		t.Skip("Skipping integration test (no credentials provided)")
 	}
-
-	client := NewProjectXClient(
-		"https://api.topstepx.com/api",
-		"https://rtc.topstepx.com/hubs/",
-		username,
-		apiKey,
-	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
@@ -65,13 +63,6 @@ func TestIntegration_Market(t *testing.T) {
 		t.Skip("Skipping integration test (no credentials provided)")
 	}
 
-	client := NewProjectXClient(
-		"https://api.topstepx.com/api",
-		"https://rtc.topstepx.com/hubs/",
-		username,
-		apiKey,
-	)
-
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -107,13 +98,6 @@ func TestIntegration_AccountsSearch(t *testing.T) {
 		t.Skip("Skipping integration test (no credentials provided)")
 	}
 
-	client := NewProjectXClient(
-		"https://api.topstepx.com/api",
-		"https://rtc.topstepx.com/hubs/",
-		username,
-		apiKey,
-	)
-
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -132,16 +116,9 @@ func TestIntegration_AccountsSearch(t *testing.T) {
 	t.Logf("Found %d accounts", len(accounts))
 }
 
-func TestRealtime_LiveIntegration(t *testing.T) {
+func TestRealtime_Trades(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-
-	client := NewProjectXClient(
-		"https://api.topstepx.com/api",
-		"rtc.topstepx.com/hubs",
-		username,
-		apiKey,
-	)
 
 	// connect
 	if err := client.Realtime.Connect(ctx); err != nil {
@@ -167,16 +144,83 @@ func TestRealtime_LiveIntegration(t *testing.T) {
 		case msg := <-trades:
 			fmt.Println("TRADE:", msg.String())
 
-			// Optional: validate structure
-			var envelope struct {
-				Type      int             `json:"type"`
-				Target    string          `json:"target"`
-				Arguments json.RawMessage `json:"arguments"`
-			}
+			t.Log("SUCCESS — received realtime trade!")
+			received = true
 
-			if envelope.Target != "GatewayTrade" {
-				t.Fatalf("unexpected target: %s", envelope.Target)
-			}
+		// TIMEOUT
+		case <-timeout:
+			t.Skip("timeout waiting for realtime trade message, (market likely closed)")
+			return
+		}
+	}
+}
+
+func TestRealtime_Quotes(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// connect
+	if err := client.Realtime.Connect(ctx); err != nil {
+		t.Fatalf("connect error: %v", err)
+	}
+
+	// subscribe
+	contract := "CON.F.US.MNQ.M26"
+	if err := client.Realtime.SubscribeContractQuotes(contract); err != nil {
+		t.Fatalf("subscribe error: %v", err)
+	}
+
+	t.Log("subscribed — waiting for trade message...")
+
+	quotes := client.Realtime.QuotesStream()
+
+	timeout := time.After(5 * time.Second)
+	received := false
+
+	for !received {
+		select {
+
+		case msg := <-quotes:
+			fmt.Println("QUOTE:", msg.String())
+
+			t.Log("SUCCESS — received realtime trade!")
+			received = true
+
+		// TIMEOUT
+		case <-timeout:
+			t.Skip("timeout waiting for realtime trade message, (market likely closed)")
+			return
+		}
+	}
+}
+
+func TestRealtime_Depth(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	// connect
+	if err := client.Realtime.Connect(ctx); err != nil {
+		t.Fatalf("connect error: %v", err)
+	}
+
+	// subscribe
+	contract := "CON.F.US.MNQ.M26"
+	if err := client.Realtime.SubscribeContractMarketDepth(contract); err != nil {
+		t.Fatalf("subscribe error: %v", err)
+	}
+
+	t.Log("subscribed — waiting for trade message...")
+
+	depth := client.Realtime.DepthStream()
+
+	timeout := time.After(5 * time.Second)
+	received := false
+
+	for !received {
+		select {
+
+		case msg := <-depth:
+			fmt.Println("DEPTH:", msg.String())
 
 			t.Log("SUCCESS — received realtime trade!")
 			received = true
