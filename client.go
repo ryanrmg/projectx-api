@@ -29,8 +29,8 @@ type ProjectXClient struct {
 func NewProjectXClient(baseUrl, wsUrl, username, apiKey string) *ProjectXClient {
 	c := &ProjectXClient{
 		baseUrl:     baseUrl,
-		marketWsUrl: wsUrl + "/market",
-		userWsUrl:   wsUrl + "/user",
+		marketWsUrl: wsUrl + "market/",
+		userWsUrl:   wsUrl + "user/",
 		username:    username,
 		apiKey:      apiKey,
 		httpClient: &http.Client{

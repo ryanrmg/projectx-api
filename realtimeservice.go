@@ -58,8 +58,8 @@ type SubscribeMsg struct {
 }
 
 func (r *RealtimeService) Connect(ctx context.Context) error {
-	marketNegotiateUrl := Https + r.client.marketWsUrl + "/negotiate?negotiateVersion=1"
-	userNegotiateUrl := Https + r.client.userWsUrl + "/negotiate?negotiateVersion=1"
+	marketNegotiateUrl := Https + r.client.marketWsUrl + "negotiate?negotiateVersion=1"
+	userNegotiateUrl := Https + r.client.userWsUrl + "negotiate?negotiateVersion=1"
 	marketWsUrl := Wss + r.client.marketWsUrl
 	userWsUrl := Wss + r.client.userWsUrl
 
@@ -280,27 +280,58 @@ func (r *RealtimeService) handleFrame(frame []byte) {
 		switch envelope.Target {
 
 		case "GatewayTrade":
-			var msg []GatewayTrade
-			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
-				for _, v := range msg {
-					r.broadcastTrade(v)
-				}
+			var arr []json.RawMessage
+			if err := json.Unmarshal(envelope.Args, &arr); err != nil {
+				log.Println(err)
+			}
+
+			if len(arr) < 2 {
+				log.Println("Unexpected args trade")
+				continue
+			}
+
+			var entries []GatewayTrade
+			if err := json.Unmarshal(arr[1], &entries); err != nil {
+				log.Println(err)
+			}
+			for _, v := range entries {
+				r.broadcastTrade(v)
 			}
 
 		case "GatewayQuote":
-			var msg []GatewayQuote
-			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
-				for _, v := range msg {
-					r.broadcastQuote(v)
-				}
+			var arr []json.RawMessage
+			if err := json.Unmarshal(envelope.Args, &arr); err != nil {
+				log.Println(err)
 			}
 
+			if len(arr) < 2 {
+				log.Println("Unexpected args quote")
+				continue
+			}
+
+			var entry GatewayQuote
+			if err := json.Unmarshal(arr[1], &entry); err != nil {
+				log.Println(err)
+			}
+			r.broadcastQuote(entry)
+
 		case "GatewayDepth":
-			var msg []GatewayDepth
-			if err := json.Unmarshal(envelope.Args, &msg); err == nil {
-				for _, v := range msg {
-					r.broadcastDepth(v)
-				}
+			var arr []json.RawMessage
+			if err := json.Unmarshal(envelope.Args, &arr); err != nil {
+				log.Println(err)
+			}
+
+			if len(arr) < 2 {
+				log.Println("Unexpected args depth")
+				continue
+			}
+
+			var entries []GatewayDepth
+			if err := json.Unmarshal(arr[1], &entries); err != nil {
+				log.Println(err)
+			}
+			for _, v := range entries {
+				r.broadcastDepth(v)
 			}
 
 		case "GatewayUserAccount":
@@ -490,4 +521,13 @@ func (r *RealtimeService) UserTradeStream() <-chan GatewayUserTrade {
 	r.mu.Unlock()
 
 	return ch
+}
+
+func (r *RealtimeService) Close() {
+	if r.marketConn != nil {
+		r.marketConn.Close()
+	}
+	if r.userConn != nil {
+		r.userConn.Close()
+	}
 }

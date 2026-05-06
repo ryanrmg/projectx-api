@@ -226,7 +226,7 @@ func negotiate(negotiateUrl, token string) (string, error) {
 
 	err = json.Unmarshal([]byte(body), &resMap)
 	if err != nil {
-		log.Fatalln("Error unmarshalling json:", err)
+		log.Fatalln("negotiate() Error unmarshalling json:", err)
 		return "", err
 	}
 
