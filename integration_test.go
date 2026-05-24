@@ -99,6 +99,42 @@ func TestIntegration_Market(t *testing.T) {
 	t.Logf("Got history for %d bars", len(bars))
 }
 
+func TestIntegration_Trade(t *testing.T) {
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	client := getClient()
+
+	accounts, err := client.Accounts.Search(
+		ctx,
+		AccountSearchRequest{OnlyActiveAccounts: true},
+	)
+
+	if err != nil {
+		t.Logf("did not get any accounts to search orders on")
+	}
+
+	if len(accounts) > 0 { // search orders on account
+		for idx, _ := range accounts {
+			trades, err := client.Trades.Search(
+				ctx,
+				TradeSearchRequest{
+					AccountId:      accounts[idx].Id,
+					StartTimestamp: time.Now().UTC().Add(-time.Duration(24*3) * time.Hour).Format(time.RFC3339),
+					EndTimestamp:   time.Now().UTC().Format(time.RFC3339),
+				},
+			)
+
+			if err != nil {
+				t.Logf("got no trades, check if you expect trades on this acct")
+			}
+			t.Logf("%v", trades)
+		}
+	}
+
+}
+
 func TestIntegration_AccountsSearch(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)

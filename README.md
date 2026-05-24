@@ -12,7 +12,7 @@ go get github.com/ryanrmg/projectx-api
 ```go
 client := NewProjectXClient(
 	"https://api.topstepx.com/api",
-	"https://rtc.topstepx.com/hubs/",
+	"rtc.topstepx.com/hubs/",
 	"username",
 	"api-key",
 )

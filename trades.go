@@ -14,7 +14,7 @@ type TradeSearchRequest struct {
 	EndTimestamp   string `json:"endTimestamp"`
 }
 
-type Trade struct {
+type GatewayUserTrade struct {
 	Id                int     `json:"id"`
 	AccountId         int     `json:"accountId"`
 	ContractId        string  `json:"contractId"`
@@ -29,13 +29,13 @@ type Trade struct {
 }
 
 type TradeSearchResponse struct {
-	Trades       []Trade `json:"trades"`
-	Success      bool    `json:"success"`
-	ErrorCode    int     `json:"errorCode"`
-	ErrorMessage string  `json:"errorMessage"`
+	Trades       []GatewayUserTrade `json:"trades"`
+	Success      bool               `json:"success"`
+	ErrorCode    int                `json:"errorCode"`
+	ErrorMessage string             `json:"errorMessage"`
 }
 
-func (s *TradeService) Search(ctx context.Context, req TradeSearchRequest) ([]Trade, error) {
+func (s *TradeService) Search(ctx context.Context, req TradeSearchRequest) ([]GatewayUserTrade, error) {
 	var resp TradeSearchResponse
 	err := s.client.Post(
 		ctx,
