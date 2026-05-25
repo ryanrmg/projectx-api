@@ -70,3 +70,15 @@ contracts, err := client.Markets.AvailableContracts(
 	}
 
 ```
+
+## Environment
+environment.sh
+```bash
+export PROJECTX_USERNAME=<your username>
+export PROJECTX_API_KEY=<your apikey>
+```
+
+It is suggested to add these environment variables to a script and 
+```bash
+$ source environment.sh
+```
